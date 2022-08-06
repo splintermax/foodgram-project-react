@@ -40,7 +40,6 @@ class CustomUserViewSet(UserViewSet):
     )
     def get_subscriptions(self, request):
         user = request.user
-        # queryset = user.followers.all()
         queryset = Follow.objects.filter(user=user)
         pages = self.paginate_queryset(queryset)
         serializer = SubscribeSerializer(
@@ -116,34 +115,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeReadSerializer
         return RecipeWriteSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        serializer = RecipeReadSerializer(
-            instance=serializer.instance,
-            context={'request': self.request}
-        )
-        return Response(
-            serializer.data, status=HTTP_201_CREATED,
-        )
-
-    def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(
-            instance, data=request.data, partial=partial
-        )
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        serializer = RecipeReadSerializer(
-            instance=serializer.instance,
-            context={'request': self.request},
-        )
-        return Response(
-            serializer.data, status=HTTP_200_OK
-        )
-
     def add_recipe(self, request, model, pk=None):
         user = request.user
         if model.objects.filter(user=user, recipe__id=pk).exists():
@@ -206,7 +177,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).values(
             'product__name',
             'product__measurement_unit'
-        ).annotate(amount=Sum('amount')).order_by('product__name')
+        ).annotate(quantity=Sum('amount')).order_by('product__name')
 
         response = HttpResponse(content_type='text/plain')
         response['Content-Disposition'] = (

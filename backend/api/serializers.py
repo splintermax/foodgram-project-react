@@ -140,22 +140,13 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 'Ошибка: Ингредиент для рецепта возможно указать только один раз.')
         return data
 
-    def add_components_and_tags(self, recipe, validated_data):
-        components, tags = (
-            validated_data.pop('components'), validated_data.pop('tags')
-        )
+    def add_components_and_tags(self, recipe, components):
         for component in components:
-            _, created = Component.objects.get_or_create(
-                product=get_object_or_404(Product, id=component['id']),
-                amount=component['amount'],
-                recipe=recipe
+            Component.objects.bulk_create(
+            product=get_object_or_404(Product, id=component['id']),
+            amount=component['amount'],
+            recipe=recipe
             )
-            if not created:
-                raise serializers.ValidationError(
-                    'Ошибка: Ингредиент для рецепта возможно указать только один раз.'
-                )
-        recipe.tags.set(tags)
-        return recipe
 
     def create(self, validated_data):
         m2m_data = {}

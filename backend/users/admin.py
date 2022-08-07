@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from rest_framework.authtoken.admin import TokenAdmin
-from users.forms import CustomUserCreationForm, CustomUserChangeForm
+
+from users.forms import CustomUserChangeForm, CustomUserCreationForm
 from users.models import CustomUser, Follow
 
 TokenAdmin.raw_id_fields = ['user']

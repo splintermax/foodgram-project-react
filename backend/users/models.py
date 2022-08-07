@@ -1,5 +1,5 @@
-﻿from django.contrib import admin
-from django.conf import settings
+﻿from django.conf import settings
+from django.contrib import admin
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.db.models.signals import post_save
@@ -23,11 +23,11 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_active', True)
         if not extra_fields.get('is_staff'):
             raise ValueError(
-                'Для суперпользователя обязательно значение "is_staff=True"'
+                'Для суперпользователя обязательно значение is_staff=True'
             )
         if not extra_fields.get('is_superuser'):
             raise ValueError(
-                'Для суперпользователя обязательно значение "is_superuser=True"'
+                'Для суперпользователя обязательно значение is_superuser=True'
             )
         return self.create_user(email, password, **extra_fields)
 

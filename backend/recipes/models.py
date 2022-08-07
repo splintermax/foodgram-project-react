@@ -50,8 +50,7 @@ class Component(models.Model):
         validators=(
             MinValueValidator(
                 settings.MIN_TIME,
-                message = 
-                'Невозможно приготовить блюдо менее, чем за 1 минуту.'
+                message='Невозможно приготовить блюдо менее, чем за 1 минуту.'
             ),
         )
     )

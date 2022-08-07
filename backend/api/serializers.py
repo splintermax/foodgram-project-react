@@ -4,7 +4,7 @@ from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from recipes.models import FavourRecipe, Component, Product, Recipe, Tag
+from recipes.models import Component, FavourRecipe, Product, Recipe, Tag
 from users.models import CustomUser, Follow
 
 
@@ -132,26 +132,26 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                     f'с указанным id = {cur_id} не существует')
             if int(cur_amount) < settings.MIN_TIME:
                 raise serializers.ValidationError(
-                    'Ошибка: Невозможно приготовить блюдо менее, чем за 1 минуту.')
+                    'Невозможно приготовить блюдо менее, чем за 1 минуту.')
             compnt_ids.append(cur_id)
         if len(compnt_ids) != len(set(compnt_ids)):
             raise serializers.ValidationError(
-                'Ошибка: Ингредиент для рецепта возможно указать только один раз.')
+                'Ингредиент для рецепта возможно указать только один раз.')
         return data
 
     def add_components_and_tags(self, recipe, validated_data):
         components, tags = (
-            validated_data.pop('components'), validated_data.pop('tags') 
-        ) 
+            validated_data.pop('components'), validated_data.pop('tags')
+        )
         for component in components:
             created = Component.objects.create(
-            product=get_object_or_404(Product, id=component['id']),
-            amount=component['amount'],
-            recipe=recipe
+                product=get_object_or_404(Product, id=component['id']),
+                amount=component['amount'],
+                recipe=recipe
             )
             if not created:
                 break
-            Component.objects.bulk_create(created)
+            Component.objects.bulk_create(created, )
         recipe.tags.set(tags)
         return recipe
 

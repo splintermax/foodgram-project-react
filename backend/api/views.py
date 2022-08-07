@@ -7,21 +7,17 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from recipes.models import (
-    Basket, FavourRecipe, Component,
-    Product, Recipe, Tag
-)
 
-from users.models import (Follow, CustomUser)
 from api.filters import ProductSearchFilter, RecipeQueryParamFilter
 from api.paginations import PageLimitNumberPagination
 from api.permissions import AuthorOrReadOnly
-from api.serializers import (
-    CustomUserSerializer, ProductSerializer, RecipeReadSerializer,
-    RecipeWriteSerializer, SubscribeSerializer, TagSerializer,
-)
+from api.serializers import (CustomUserSerializer, ProductSerializer,
+                             RecipeReadSerializer, RecipeWriteSerializer,
+                             SubscribeSerializer, TagSerializer)
+from recipes.models import (Basket, Component, FavourRecipe, Product, Recipe,
+                            Tag)
+from users.models import CustomUser, Follow
 
 
 class CustomUserViewSet(UserViewSet):

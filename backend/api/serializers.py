@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.shortcuts import get_object_or_404
-
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
@@ -140,13 +139,21 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 'Ошибка: Ингредиент для рецепта возможно указать только один раз.')
         return data
 
-    def add_components_and_tags(self, recipe, components):
+    def add_components_and_tags(self, recipe, validated_data):
+        components, tags = (
+            validated_data.pop('components'), validated_data.pop('tags') 
+        ) 
         for component in components:
-            Component.objects.bulk_create(
+            created = Component.objects.create(
             product=get_object_or_404(Product, id=component['id']),
             amount=component['amount'],
             recipe=recipe
             )
+            if not created:
+                break
+            Component.objects.bulk_create(created)
+        recipe.tags.set(tags)
+        return recipe
 
     def create(self, validated_data):
         m2m_data = {}

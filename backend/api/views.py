@@ -187,7 +187,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         for component in basket_components:
             response.write(
                 f'* {component["product__name"]} - '
-                f'{component["amount"]} '
+                f'{component["total"]} '
                 f'{component["product__measurement_unit"]} \r\n'
             )
         return response

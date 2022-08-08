@@ -136,7 +136,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             compnt_ids.append(cur_id)
         if len(compnt_ids) != len(set(compnt_ids)):
             raise serializers.ValidationError(
-                'Ингредиент для рецепта возможно указать только один раз.')
+                'Ингредиент возможно указать только один раз.')
         return data
 
     def add_components_and_tags(self, recipe, validated_data):
@@ -144,14 +144,15 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             validated_data.pop('components'), validated_data.pop('tags')
         )
         for component in components:
-            created = Component.objects.create(
-                product=get_object_or_404(Product, id=component['id']),
-                amount=component['amount'],
-                recipe=recipe
-            )
+            created = Component.objects.bulk_create([
+                Component(product=get_object_or_404(
+                    Product, id=component['id'])),
+                Component(amount=component['amount']),
+                Component(recipe=recipe)
+            ])
             if not created:
-                break
-            Component.objects.bulk_create(created, )
+                raise serializers.ValidationError(
+                    'Ингредиент возможно указать только один раз.')
         recipe.tags.set(tags)
         return recipe
 

@@ -167,14 +167,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response({
                 'errors': 'Список покупок пуст.'
             }, status=status.HTTP_400_BAD_REQUEST)
-
         basket_components = Component.objects.filter(
             recipe__basket_recipes__user=user
         ).values(
             'product__name',
             'product__measurement_unit'
         ).annotate(quantity=Sum('amount')).order_by('product__name')
-
         response = HttpResponse(content_type='text/plain')
         response['Content-Disposition'] = (
             'attachment; filename="shopping_list.txt"'
@@ -183,7 +181,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         for component in basket_components:
             response.write(
                 f'* {component["product__name"]} - '
-                f'{component["total"]} '
+                f'{component["quantity"]} '
                 f'{component["product__measurement_unit"]} \r\n'
             )
         return response

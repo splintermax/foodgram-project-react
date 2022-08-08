@@ -5,6 +5,7 @@ from rest_framework.routers import DefaultRouter
 from api.views import CustomUserViewSet
 from users.views import TokenCreateNonBlockedUserView
 
+
 app_name = 'users'
 
 router = DefaultRouter()

@@ -142,7 +142,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 'Ингредиент возможно указать только один раз.')
         return data
 
-    def create_components(self, recipe, components):
+    def add_components(self, recipe, components):
         batch_size = 100
         objs = (Component(
             component=component['component'],
@@ -155,7 +155,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 break
         Component.objects.bulk_create(batch, batch_size)
 
-    def create_tags(self, tags, recipe):
+    def add_tags(self, tags, recipe):
         for tag in tags:
             recipe.tags.add(tag)    
 

@@ -153,11 +153,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             batch = List(islice(objs, batch_size))
             if not batch:
                 break
-        Component.objects.bulk_create(batch, batch_size)
-
-    def add_tags(self, tags, recipe):
-        for tag in tags:
-            recipe.tags.add(tag)    
+        Component.objects.bulk_create(batch, batch_size) 
 
     def create(self, validated_data):
         m2m_data = {}

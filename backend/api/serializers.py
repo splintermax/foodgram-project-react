@@ -139,34 +139,28 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 'Ингредиент возможно указать только один раз.')
         return data
 
-    def add_components_and_tags(self, recipe, validated_data):
-        components, tags = (
-            validated_data.pop('components'), validated_data.pop('tags')
-        )
-        for component in components:
-            created = Component.objects.bulk_create([
-                Component(product=get_object_or_404(
-                    Product, id=component['id'])),
-                Component(amount=component['amount']),
-                Component(recipe=recipe)
-            ])
-            if not created:
-                raise serializers.ValidationError(
-                    'Ингредиент возможно указать только один раз.')
-        recipe.tags.set(tags)
-        return recipe
+    def create_components(self, recipe, components):
+        Component.objects.bulk_create([Component(
+            component=component['component'],
+            recipe=recipe,
+            amount=component['amount']
+        ) for component in components])
+
+    def create_tags(self, tags, recipe):
+        for tag in tags:
+            recipe.tags.add(tag)    
 
     def create(self, validated_data):
         m2m_data = {}
         m2m_data['components'] = validated_data.pop('components')
         m2m_data['tags'] = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
-        return self.add_components_and_tags(recipe, m2m_data)
+        return self.add_components(recipe, m2m_data)
 
     def update(self, instance, validated_data):
         instance.components.clear()
         instance.tags.clear()
-        instance = self.add_components_and_tags(instance, validated_data)
+        instance = self.add_components(instance, validated_data)
         return super().update(instance, validated_data)
 
 

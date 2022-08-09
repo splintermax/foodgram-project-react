@@ -1,3 +1,6 @@
+from itertools import islice
+from typing import List
+
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
@@ -140,11 +143,17 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return data
 
     def create_components(self, recipe, components):
-        Component.objects.bulk_create([Component(
+        batch_size = 100
+        objs = (Component(
             component=component['component'],
             recipe=recipe,
             amount=component['amount']
-        ) for component in components])
+        ) for component in components(1000))
+        while True:
+            batch = List(islice(objs, batch_size))
+            if not batch:
+                break
+        Component.objects.bulk_create(batch, batch_size)
 
     def create_tags(self, tags, recipe):
         for tag in tags:

@@ -131,11 +131,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
     def add_components(self, recipe, components):
         Component.objects.bulk_create(
-            component=component['component'],
+            component=component.objects.get(pk=component['id']),
             recipe=recipe,
             amount=component['amount']
         ) for component in components
-
+   
     def create(self, validated_data):
         m2m_data = {}
         m2m_data['components'] = validated_data.pop('components')

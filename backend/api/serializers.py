@@ -127,33 +127,17 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 'Ошибка: Невозможно создание рецепта без ингредиента'
             )
         compnt_ids = []
-        for component in data['components']:
-            cur_id, cur_amount = component['id'], component['amount']
-            if not Product.objects.filter(id=cur_id).exists():
-                raise serializers.ValidationError(
-                    'Ошибка: Ингредиента '
-                    f'с указанным id = {cur_id} не существует')
-            if int(cur_amount) < settings.MIN_TIME:
-                raise serializers.ValidationError(
-                    'Невозможно приготовить блюдо менее, чем за 1 минуту.')
-            compnt_ids.append(cur_id)
         if len(compnt_ids) != len(set(compnt_ids)):
             raise serializers.ValidationError(
                 'Ингредиент возможно указать только один раз.')
         return data
 
     def add_components(self, recipe, components):
-        batch_size = 100
-        objs = (Component(
+        Component.objects.bulk_create(
             component=component['component'],
             recipe=recipe,
             amount=component['amount']
-        ) for component in components(1000))
-        while True:
-            batch = List(islice(objs, batch_size))
-            if not batch:
-                break
-        Component.objects.bulk_create(batch, batch_size) 
+        ) for component in components
 
     def create(self, validated_data):
         m2m_data = {}

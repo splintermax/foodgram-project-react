@@ -128,13 +128,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 'Ингредиент возможно указать только один раз.')
         return data
 
-    def create(self, validated_data):
-        tags = validated_data.pop('tags')
-        ingredients_data = validated_data.pop('ingredients')
-        recipe = Recipe.objects.create(
-            author=self.context.get('request').user, **validated_data)
-        recipe.tags.set(tags)
-
+    def add_ingredients(self, recipe, ingredients_data):
         new_ingredients = [
             Component(
                 recipe=recipe,
@@ -144,15 +138,22 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             for ingredient_data in ingredients_data
         ]
         Component.objects.bulk_create(new_ingredients)
-        return recipe
+    
+    def create(self, validated_data):
+        tags = validated_data.pop('tags')
+        ingredients_data = validated_data.pop('ingredients')
+        recipe = Recipe.objects.create(
+            author=self.context.get('request').user, **validated_data)
+        recipe.tags.set(tags)
+        return self.add_ingredients(recipe, ingredients_data)
 
     def update(self, instance, validated_data):
         instance.tags.clear()
         tags = validated_data.pop('tags')
         instance.tags.set(tags)
         Component.objects.filter(recipe=instance).delete()
-        ingredients = validated_data.pop('ingredients')
-        self.create(instance, ingredients)
+        ingredients_data = validated_data.pop('ingredients')
+        self.add_ingredients(instance, ingredients_data)
         return super().update(instance, validated_data)
 
 

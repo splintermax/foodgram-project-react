@@ -1,18 +1,18 @@
-version: '3.3'
+version: '3.8'
 services:
 
   db:
     image: postgres:13.0-alpine
-    restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./.env
 
   backend:
-    image: splintermax/foodgram-project-react:latest
+    image: splintermax/foodgram_backend:latest
     restart: always
     volumes:
+      - data_value:/app/data/
       - static_value:/app/static/
       - media_value:/app/media/
     depends_on:
@@ -21,26 +21,23 @@ services:
       - ./.env
 
   frontend:
-    image: splintermax/foodgram-project-react:latest
+    image: splintermax/foodgram_frontend:latest
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
       - backend
 
   nginx:
-    image: nginx:1.21.3-alpine
-    restart: always
+    image: nginx:1.19.3
     ports:
-      - "80:80"
+      - 80:80
     volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - static_value:/var/html/static/
-      - media_value:/var/html/media/
+      - ./default.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
-
+      - static_value:/var/html/static/
+      - media_value:/var/html/media/
     depends_on:
-      - backend
       - frontend
 
 volumes:

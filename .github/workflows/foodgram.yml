@@ -43,9 +43,9 @@ jobs:
       - name: Push frontend
         uses: docker/build-push-action@v2 
         with:
+          context: frontend/
           push: true
           tags: splintermax/foodgram_frontend:latest
-          file: frontend/dockerfile
   deploy:
     runs-on: ubuntu-latest
     needs: build_and_push_to_docker_hub

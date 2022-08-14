@@ -59,7 +59,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
-            cd infra/
             sudo docker pull splintermax/foodgram_backend:latest
             sudo docker pull splintermax/foodgram_frontend:latest
             sudo docker-compose stop

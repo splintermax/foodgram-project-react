@@ -10,7 +10,7 @@ services:
       - ./.env
 
   backend:
-    image: splintermax/foodgram_backend:latest
+    image: splintermax/foodgram-project-react:latest
     restart: always
     volumes:
       - static_value:/app/static/
@@ -21,7 +21,7 @@ services:
       - ./.env
 
   frontend:
-    image: splintermax/foodgram_frontend:latest
+    image: splintermax/foodgram-project-react:latest
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:

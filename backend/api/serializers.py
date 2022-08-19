@@ -30,10 +30,10 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class ComponentSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField(source='product.id')
-    name = serializers.ReadOnlyField(source='product.name')
+    id = serializers.ReadOnlyField(source='ingredient.id')
+    name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
-        source='product.measurement_unit'
+        source='ingredient.measurement_unit'
     )
     amount = serializers.IntegerField()
 
@@ -43,7 +43,7 @@ class ComponentSerializer(serializers.ModelSerializer):
         validators = (
             UniqueTogetherValidator(
                 queryset=Component.objects.all(),
-                fields=('product', 'recipe')
+                fields=('ingredient', 'recipe')
             ),
         )
         read_only_fields = ('id', )
@@ -81,7 +81,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     )
     ingredients = serializers.ListField(
         child=serializers.DictField(child=serializers.CharField()),
-        source='components'
     )
     tags = serializers.ListField(
         child=serializers.SlugRelatedField(
@@ -118,7 +117,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                     f'Ошибка: Тега с указанным id = {tag.id} не существует'
                 )
 
-        if not data['components']:
+        if not data['ingredients']:
             raise serializers.ValidationError(
                 'Ошибка: Невозможно создание рецепта без ингредиента'
             )
@@ -142,8 +141,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         tags = validated_data.pop('tags')
         ingredients_data = validated_data.pop('ingredients')
-        recipe = Recipe.objects.create(
-            author=self.context.get('request').user, **validated_data)
+        recipe = super().create(validated_data)
         recipe.tags.set(tags)
         self.add_ingredients(recipe, ingredients_data)
         return recipe
@@ -179,7 +177,7 @@ class RecipeReadSerializer(DynamicFieldsModelSerializer):
         max_length=None, use_url=True
     )
     ingredients = ComponentSerializer(
-        many=True, source='recipe_components',
+        many=True, source='recipe_ingredients',
         read_only=True
     )
     tags = TagSerializer(many=True)

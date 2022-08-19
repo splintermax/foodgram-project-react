@@ -14,10 +14,10 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Component)
 class ComponentAdmin(admin.ModelAdmin):
-    list_display = ('product', 'amount',)
-    list_filter = ('product__measurement_unit', 'recipe__tags',)
-    search_fields = ('product__name',)
-    ordering = ('product',)
+    list_display = ('ingredient', 'amount',)
+    list_filter = ('ingredient__measurement_unit', 'recipe__tags',)
+    search_fields = ('ingredient__name',)
+    ordering = ('ingredient',)
 
 
 class ComponentRecipeInline(admin.TabularInline):

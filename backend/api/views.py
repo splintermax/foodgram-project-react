@@ -101,8 +101,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, )
     filter_class = RecipeQueryParamFilter
 
-    http_method_names = ('get', 'post', 'put', 'patch', 'delete', )
-
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
@@ -167,22 +165,22 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response({
                 'errors': 'Список покупок пуст.'
             }, status=status.HTTP_400_BAD_REQUEST)
-        basket_components = Component.objects.filter(
+        basket_ingredients = Component.objects.filter(
             recipe__basket_recipes__user=user
         ).values(
-            'product__name',
-            'product__measurement_unit'
-        ).annotate(quantity=Sum('amount')).order_by('product__name')
+            'ingredient__name',
+            'ingredient__measurement_unit'
+        ).annotate(quantity=Sum('amount')).order_by('ingredient__name')
         response = HttpResponse(content_type='text/plain')
         response['Content-Disposition'] = (
             'attachment; filename="shopping_list.txt"'
         )
         response.write('Список продуктов к покупке\r\n\r\n')
-        for component in basket_components:
+        for ingredient in basket_ingredients:
             response.write(
-                f'* {component["product__name"]} - '
-                f'{component["quantity"]} '
-                f'{component["product__measurement_unit"]} \r\n'
+                f'* {ingredient["ingredient__name"]} - '
+                f'{ingredient["quantity"]} '
+                f'{ingredient["ingredient__measurement_unit"]} \r\n'
             )
         return response
 

@@ -46,4 +46,4 @@ sudo docker-compose exec backend python manage.py load_tags
 sudo docker-compose exec backend python manage.py load_ingredients
 ```
 
-Над проектом работал [Максим Коркин](https://github.com/splintermax)
+Над проектом работал: [Максим Коркин](https://github.com/splintermax)

@@ -9,7 +9,6 @@ services:
       - ./.env
 
   backend:
-    build:
     image: splintermax/foodgram_backend:latest
     volumes:
       - data_value:/app/data/
@@ -21,7 +20,6 @@ services:
       - ./.env
   
   frontend:
-    build:
     image: splintermax/foodgram_backend:latest
     volumes:
       - ../frontend/:/app/result_build/

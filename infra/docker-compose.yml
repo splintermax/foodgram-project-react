@@ -10,6 +10,7 @@ services:
 
   backend:
     image: splintermax/foodgram_backend:latest
+    restart: always
     volumes:
       - data_value:/app/data/
       - static_value:/app/static/
@@ -18,7 +19,7 @@ services:
       - db
     env_file:
       - ./.env
-  
+
   frontend:
     image: splintermax/foodgram_frontend:latest
     volumes:
@@ -31,9 +32,9 @@ services:
     ports:
       - 80:80
     volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./default.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
-      - ../docs/:/usr/share/nginx/html/api/docs/
+      - ./docs/:/usr/share/nginx/html/api/docs/
       - static_value:/var/html/static/
       - media_value:/var/html/media/
     depends_on:

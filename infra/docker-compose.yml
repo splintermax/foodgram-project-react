@@ -10,8 +10,7 @@ services:
 
   backend:
     build:
-      context: ../backend
-      dockerfile: Dockerfile
+    image: splintermax/foodgram_backend:latest
     volumes:
       - data_value:/app/data/
       - static_value:/app/static/
@@ -20,10 +19,10 @@ services:
       - db
     env_file:
       - ./.env
+  
   frontend:
     build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: splintermax/foodgram_backend:latest
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:

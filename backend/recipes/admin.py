@@ -1,7 +1,13 @@
 from django.contrib import admin
 
-from recipes.models import (Basket, Component, FavourRecipe, Product, Recipe,
-                            Tag)
+from recipes.models import (
+    Basket,
+    Component,
+    FavourRecipe,
+    Product,
+    Recipe,
+    Tag
+)
 
 
 @admin.register(Product)
@@ -14,10 +20,10 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Component)
 class ComponentAdmin(admin.ModelAdmin):
-    list_display = ('ingredient', 'amount',)
-    list_filter = ('ingredient__measurement_unit', 'recipe__tags',)
-    search_fields = ('ingredient__name',)
-    ordering = ('ingredient',)
+    list_display = ('product', 'amount',)
+    list_filter = ('product__measurement_unit', 'recipe__tags',)
+    search_fields = ('product__name',)
+    ordering = ('product',)
 
 
 class ComponentRecipeInline(admin.TabularInline):

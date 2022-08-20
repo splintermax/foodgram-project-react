@@ -10,7 +10,7 @@ User = settings.AUTH_USER_MODEL
 class Product(models.Model):
     name = models.CharField(
         max_length=150,
-        verbose_name='Название ингредиента'
+        verbose_name='Название продукта'
     )
     measurement_unit = models.CharField(
         max_length=150,
@@ -21,7 +21,7 @@ class Product(models.Model):
         constraints = (
             models.UniqueConstraint(
                 fields=('name', 'measurement_unit',),
-                name='unique_ingredient_unit'
+                name='unique_product_unit'
             ),
         )
         verbose_name = 'Продукт'
@@ -33,15 +33,16 @@ class Product(models.Model):
 
 
 class Component(models.Model):
-    ingredient = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-        related_name='ingredient',
-        verbose_name='Ингредиент',
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE,
+        related_name='components',
+        verbose_name='Ингридиент для рецепта'
     )
     recipe = models.ForeignKey(
         'Recipe',
         on_delete=models.CASCADE,
+        related_name='recipe_components',
+        verbose_name='Рецепт',
     )
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество продукта',
@@ -59,8 +60,8 @@ class Component(models.Model):
         verbose_name_plural = 'Ингредиенты для рецепта'
 
     def __str__(self):
-        return (f'{self.ingredient.name} - {self.amount} '
-                f'({self.ingredient.measurement_unit})')
+        return (f'{self.product.name} - {self.amount} '
+                f'({self.product.measurement_unit})')
 
 
 class Tag(models.Model):
@@ -103,23 +104,32 @@ class Recipe(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        related_name='recipes',
+        verbose_name='Автор'
     )
     title = models.CharField(
         max_length=200,
+        verbose_name='Название'
     )
     picture = models.ImageField(
         upload_to='images/',
+        verbose_name='Картинка блюда'
     )
     text = models.TextField(
         max_length=3000,
+        verbose_name='Описание рецепта'
     )
     ingredients = models.ManyToManyField(
         Product,
         through='Component',
+        related_name='recipes',
+        verbose_name='Ингридиенты',
     )
     tags = models.ManyToManyField(
         Tag,
         blank=True,
+        related_name='recipes',
+        verbose_name='Теги'
     )
     cooking_time = models.PositiveSmallIntegerField(
         default=1,
@@ -144,7 +154,7 @@ class Recipe(models.Model):
     def __str__(self):
         return f'{self.title[:20]}, {self.author.username}'
 
-    @property  # type: ignore
+    @property
     @admin.display(
         description='Добавлен в избранное раз',
     )

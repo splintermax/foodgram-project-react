@@ -1,7 +1,7 @@
 from django.conf import settings
 from drf_extra_fields.fields import Base64ImageField
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
 
 from recipes.models import Component, FavourRecipe, Product, Recipe, Tag
 from users.models import CustomUser, Follow
@@ -30,23 +30,16 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class ComponentSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField(source='ingredient.id')
-    name = serializers.ReadOnlyField(source='ingredient.name')
+    id = serializers.ReadOnlyField(source='product.id')
+    name = serializers.ReadOnlyField(source='product.name')
     measurement_unit = serializers.ReadOnlyField(
-        source='ingredient.measurement_unit'
+        source='product.measurement_unit'
     )
     amount = serializers.IntegerField()
 
     class Meta:
         model = Component
         fields = ('id', 'name', 'measurement_unit', 'amount')
-        validators = (
-            UniqueTogetherValidator(
-                queryset=Component.objects.all(),
-                fields=('ingredient', 'recipe')
-            ),
-        )
-        read_only_fields = ('id', )
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -81,6 +74,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     )
     ingredients = serializers.ListField(
         child=serializers.DictField(child=serializers.CharField()),
+        source='components'
     )
     tags = serializers.ListField(
         child=serializers.SlugRelatedField(
@@ -101,7 +95,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Ошибка: Невозможно приготовить блюдо менее, чем за 1 минуту.'
             )
-
         if not data['tags']:
             raise serializers.ValidationError(
                 'Ошибка: Создание рецепта без тега невозможно'
@@ -110,14 +103,12 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Ошибка: Тег для рецепта возможно указать только один раз.'
             )
-
         for tag in data['tags']:
             if not Tag.objects.filter(id=tag.id).exists():
                 raise serializers.ValidationError(
                     f'Ошибка: Тега с указанным id = {tag.id} не существует'
                 )
-
-        if not data['ingredients']:
+        if not data['components']:
             raise serializers.ValidationError(
                 'Ошибка: Невозможно создание рецепта без ингредиента'
             )
@@ -127,23 +118,24 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 'Ингредиент возможно указать только один раз.')
         return data
 
-    def add_ingredients(self, recipe, ingredients_data):
-        new_ingredients = [
+    def add_components(self, recipe, components):
+        new_components = [
             Component(
                 recipe=recipe,
-                ingredient=ingredient_data['ingredient'],
-                amount=ingredient_data['amount'],
+                product=get_object_or_404(Product, id=component['id']),
+                amount=component['amount'],
             )
-            for ingredient_data in ingredients_data
+            for component in components
         ]
-        Component.objects.bulk_create(new_ingredients)
+        Component.objects.bulk_create(new_components)
 
     def create(self, validated_data):
+        components = validated_data.pop('components')
         tags = validated_data.pop('tags')
-        ingredients_data = validated_data.pop('ingredients')
-        recipe = super().create(validated_data)
+        recipe = Recipe.objects.create(**validated_data)
+        recipe.save()
         recipe.tags.set(tags)
-        self.add_ingredients(recipe, ingredients_data)
+        self.add_components(recipe, components)
         return recipe
 
     def update(self, instance, validated_data):
@@ -151,9 +143,12 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         tags = validated_data.pop('tags')
         instance.tags.set(tags)
         Component.objects.filter(recipe=instance).delete()
-        ingredients_data = validated_data.pop('ingredients')
-        self.add_ingredients(instance, ingredients_data)
+        components = validated_data.pop('components')
+        self.add_components(instance, components)
         return super().update(instance, validated_data)
+
+    def to_representation(self, instance):
+        return RecipeReadSerializer(instance, context=self.context).data
 
 
 class DynamicFieldsModelSerializer(serializers.ModelSerializer):
@@ -177,7 +172,7 @@ class RecipeReadSerializer(DynamicFieldsModelSerializer):
         max_length=None, use_url=True
     )
     ingredients = ComponentSerializer(
-        many=True, source='recipe_ingredients',
+        many=True, source='recipe_components',
         read_only=True
     )
     tags = TagSerializer(many=True)

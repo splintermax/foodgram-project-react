@@ -104,7 +104,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
     http_method_names = ('get', 'post', 'put', 'patch', 'delete', )
 
     def get_queryset(self):
-        queryset = Recipe.objects.all()
+        queryset = Recipe.objects.select_related("author").prefetch_related(
+            "tags",
+            "ingredients",
+            "recipe",
+            "shopping_cart_recipe",
+            "favorite_recipe",
+        )
         is_favorited = self.request.query_params.get(
             'is_favorited')
         is_in_shopping_cart = self.request.query_params.get(

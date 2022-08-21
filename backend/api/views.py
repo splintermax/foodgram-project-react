@@ -111,6 +111,23 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeReadSerializer
         return RecipeWriteSerializer
 
+    def add_recipe(self, request, model, pk=None):
+        user = request.user
+        if model.objects.filter(user=user, recipe__id=pk).exists():
+            return Response({
+                'errors': 'Рецепт уже существует'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        recipe = get_object_or_404(Recipe, id=pk)
+        model.objects.create(user=user, recipe=recipe)
+        serializer = RecipeReadSerializer(recipe, fields='__all__')
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def del_recipe(self, request, recipe_id):
+        user = request.user
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        Basket.objects.filter(user=user, recipe=recipe).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     @action(
         detail=True, methods=('post', 'delete'),
         permission_classes=(IsAuthenticated,),

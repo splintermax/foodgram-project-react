@@ -100,14 +100,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                     "Ингредиент возможно использовать только один раз."
                 )
             unique_components_data.add(component_id)
-            if data['cooking_time'] < settings.MIN_TIME:
-                raise serializers.ValidationError(
-                    'Ошибка: Приготовление невозможно менее, чем за 1 минуту.'
-                )
-            if not data['components']:
-                raise serializers.ValidationError(
-                    'Ошибка: Невозможно создание рецепта без ингредиента'
-                )
         return data
 
     def add_components(self, recipe, components):

@@ -1,6 +1,6 @@
 ﻿from django.conf import settings
 from django.contrib import admin
-from django.core.validators import MinValueValidator, RegexValidator
+from django.core.validators import RegexValidator
 from django.db import models
 from pytils.translit import slugify
 

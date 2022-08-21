@@ -108,7 +108,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         qs = Recipe.objects.select_related("author").prefetch_related(
             "tags",
             "ingredients",
-            "recipes",
             "shopping_cart_recipe",
             "favorite_recipe",
         )

@@ -95,6 +95,7 @@ class ProductViewSet(ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    queryset = Recipe.objects.all()
     permission_classes = (AuthorOrReadOnly, )
     pagination_class = PageLimitNumberPagination
     filter_backends = (DjangoFilterBackend, )

@@ -111,13 +111,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return RecipeWriteSerializer
 
     def get_queryset(self):
-        query = Recipe.objects.select_related("author").prefetch_related(
-            "tags",
-            "ingredients",
-            "recipe_component",
-            "shopping_cart_recipe",
-            "favorite_recipe",
-        )
+        query = Recipe.objects.all()
         if self.request.user.is_authenticated:
             query = query.annotate(
                 is_favorited=Exists(

@@ -97,11 +97,24 @@ class ProductViewSet(ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = (AuthorOrReadOnly, )
     pagination_class = PageLimitNumberPagination
-    queryset = Recipe.objects.all()
     filter_backends = (DjangoFilterBackend, )
     filter_class = RecipeQueryParamFilter
 
     http_method_names = ('get', 'post', 'put', 'patch', 'delete', )
+
+    def get_queryset(self):
+        queryset = Recipe.objects.all()
+        is_favorited = self.request.query_params.get(
+            'is_favorited')
+        is_in_shopping_cart = self.request.query_params.get(
+            'is_in_shopping_cart')
+        if is_favorited:
+            queryset = queryset.filter(
+                recipes_favorite__user=self.request.user)
+        if is_in_shopping_cart:
+            queryset = queryset.filter(
+                shopping_cart__user=self.request.user)
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -111,21 +124,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeReadSerializer
         return RecipeWriteSerializer
 
-    def add_del_method(self, user, pk, model):
-        user = get_object_or_404(CustomUser, username=user)
-        recipe = get_object_or_404(Recipe, pk=pk)
-        if self.request.method == 'POST':
-            model.objects.get_or_create(user=user, recipe=recipe)
-            data = {
-                'id': recipe.id,
-                'name': recipe.name,
-                'image': str(recipe.image),
-                'cooking_time': recipe.cooking_time
-            }
-            return Response(data, status=status.HTTP_201_CREATED)
-        instance = get_object_or_404(model, user=user, recipe=recipe)
-        instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def add_recipe(self, request, model, pk=None):
+        user = request.user
+        if model.objects.filter(user=user, recipe__id=pk).exists():
+            return Response({
+                'errors': 'Рецепт уже существует'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        recipe = get_object_or_404(Recipe, id=pk)
+        model.objects.create(user=user, recipe=recipe)
+        serializer = RecipeReadSerializer(recipe, fields='__all__')
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def del_recipe(self, request, model, pk=None):
+        user = request.user
+        obj = model.objects.filter(user=user, recipe__id=pk)
+        if obj.exists():
+            obj.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({
+            'errors': 'Невозможно удалить несуществующий рецепт'
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         detail=True, methods=('post', 'delete'),
@@ -133,7 +151,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='shopping_cart', url_name='basket',
     )
     def shopping_cart(self, request, pk=None):
-        return self.add_del_method(request, Basket, pk)
+        if request.method == 'DELETE':
+            return self.del_recipe(request, Basket, pk)
+        elif request.method == 'POST':
+            return self.add_recipe(request, Basket, pk)
+        return None
 
     @action(
         detail=True, methods=('post', 'delete'),
@@ -141,7 +163,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='favorite', url_name='favorite',
     )
     def add_del_favorite(self, request, pk=None):
-        return self.add_del_method(request, FavourRecipe, pk)
+        if request.method == 'POST':
+            return self.add_recipe(request, FavourRecipe, pk)
+        elif request.method == 'DELETE':
+            return self.del_recipe(request, FavourRecipe, pk)
+        return None
 
     @action(
         detail=False, methods=('get',),

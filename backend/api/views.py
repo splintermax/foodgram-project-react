@@ -105,12 +105,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     http_method_names = ('get', 'post', 'put', 'patch', 'delete', )
 
     def get_queryset(self):
-        qs = Recipe.objects.select_related("author").prefetch_related(
-            "tags",
-            "ingredients",
-            "shopping_cart_recipe",
-            "favorite_recipe",
-        )
+        qs = Recipe.objects.select_related("author")
         if self.request.user.is_authenticated:
             qs = qs.annotate(
                 is_favorited=Exists(

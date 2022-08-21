@@ -1,5 +1,4 @@
 ﻿from django.db.models import Sum
-from django.db.models.expressions import Exists, OuterRef
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -104,23 +103,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     http_method_names = ('get', 'post', 'put', 'patch', 'delete', )
 
-    def get_queryset(self):
-        qs = Recipe.objects.select_related("author")
-        if self.request.user.is_authenticated:
-            qs = qs.annotate(
-                is_favorited=Exists(
-                    FavourRecipe.objects.filter(
-                        user=self.request.user, recipe=OuterRef("id")
-                    )
-                ),
-                is_in_shopping_cart=Exists(
-                    Basket.objects.filter(
-                        user=self.request.user, recipe=OuterRef("id")
-                    )
-                ),
-            )
-        return qs
-
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
@@ -130,13 +112,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return RecipeWriteSerializer
 
     def add_recipe(self, request, model, pk=None):
-        user = request.user
-        if model.objects.filter(user=user, recipe__id=pk).exists():
-            return Response({
-                'errors': 'Рецепт уже существует'
-            }, status=status.HTTP_400_BAD_REQUEST)
         recipe = get_object_or_404(Recipe, id=pk)
-        model.objects.create(user=user, recipe=recipe)
+        model.objects.create(user=self.request.user, recipe=recipe)
         serializer = RecipeReadSerializer(recipe, fields='__all__')
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

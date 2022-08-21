@@ -89,25 +89,20 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             'image', 'name', 'text', 'cooking_time',
         )
 
-    def validate_components(self, data):
+    def validate(self, data):
         components = data['components']
         unique_components_data = set()
-        for components_data in components:
-            component_id = components_data["id"]
+        for component in components:
+            component_id = component["id"]
             if component_id in unique_components_data:
                 raise serializers.ValidationError(
                     'Ингредиент возможно использовать только один раз.'
                 )
-            unique_components_data.add(component_id)
-        return data
-
-    def validate_amount(self, data):
-        components = self.initial_data.get('components')
-        for component in components:
             if int(component['amount']) < 0:
                 raise serializers.ValidationError(
                     'Убедитесь, что значение количества ингредиента больше 0'
                 )
+            unique_components_data.add(component_id)
         return data
 
     def add_components(self, recipe, components):

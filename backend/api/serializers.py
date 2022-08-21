@@ -91,31 +91,31 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
-        if data['cooking_time'] < settings.MIN_TIME:
-            raise serializers.ValidationError(
-                'Ошибка: Невозможно приготовить блюдо менее, чем за 1 минуту.'
-            )
-        if not data['tags']:
-            raise serializers.ValidationError(
-                'Ошибка: Создание рецепта без тега невозможно'
-            )
-        if len(data['tags']) != len(set(data['tags'])):
-            raise serializers.ValidationError(
-                'Ошибка: Тег для рецепта возможно указать только один раз.'
-            )
-        for tag in data['tags']:
-            if not Tag.objects.filter(id=tag.id).exists():
+        components = data['components']
+        unique_components_data = set()
+        for components_data in components:
+            component_id = components_data["id"]
+            if component_id in unique_components_data:
                 raise serializers.ValidationError(
-                    f'Ошибка: Тега с указанным id = {tag.id} не существует'
+                    "Ингредиент возможно использовать только один раз."
                 )
-        if not data['components']:
-            raise serializers.ValidationError(
-                'Ошибка: Невозможно создание рецепта без ингредиента'
-            )
-        compnt_ids = []
-        if len(compnt_ids) != len(set(compnt_ids)):
-            raise serializers.ValidationError(
-                'Ингредиент возможно указать только один раз.')
+            unique_components_data.add(component_id)
+            if data['cooking_time'] < settings.MIN_TIME:
+                raise serializers.ValidationError(
+                    'Ошибка: Невозможно приготовить блюдо менее, чем за 1 минуту.'
+                )
+            if not data['tags']:
+                raise serializers.ValidationError(
+                    'Ошибка: Создание рецепта без тега невозможно'
+                )
+            if len(data['tags']) != len(set(data['tags'])):
+                raise serializers.ValidationError(
+                    'Ошибка: Тег для рецепта возможно указать только один раз.'
+                )
+            if not data['components']:
+                raise serializers.ValidationError(
+                    'Ошибка: Невозможно создание рецепта без ингредиента'
+                )
         return data
 
     def add_components(self, recipe, components):

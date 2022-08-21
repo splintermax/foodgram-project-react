@@ -139,6 +139,3 @@ DJOSER = {
         'user_list': ('rest_framework.permissions.AllowAny',)
     }
 }
-
-MIN_TIME = 1
-MIN_COOKING_VALUE = 1

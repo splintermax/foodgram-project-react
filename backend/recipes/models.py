@@ -1,6 +1,6 @@
 ﻿from django.conf import settings
 from django.contrib import admin
-from django.core.validators import RegexValidator
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from pytils.translit import slugify
 
@@ -46,7 +46,13 @@ class Component(models.Model):
     )
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество продукта',
-        default=1
+        default=1,
+        validators=(
+            MinValueValidator(
+                settings.MIN_TIME,
+                message='Невозможно приготовить блюдо менее, чем за 1 минуту.'
+            ),
+        )
     )
 
     class Meta:
@@ -127,6 +133,12 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveSmallIntegerField(
         default=1,
+        validators=(
+            MinValueValidator(
+                settings.MIN_COOKING_VALUE,
+                message='Невозможно использовать меньше 1 ингредиента.'
+            ),
+        ),
         verbose_name='Время на приготовление (мин)'
     )
     pub_date = pub_date = models.DateTimeField(

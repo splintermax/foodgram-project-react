@@ -122,11 +122,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer = RecipeReadSerializer(recipe, fields='__all__')
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def del_recipe(self, request, recipe_id):
+    def del_recipe(self, request, model, pk=None):
         user = request.user
-        recipe = get_object_or_404(Recipe, id=recipe_id)
-        Basket.objects.filter(user=user, recipe=recipe).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        obj = model.objects.filter(user=user, recipe__id=pk)
+        if obj.exists():
+            obj.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         detail=True, methods=('post', 'delete'),

@@ -2,7 +2,7 @@ from drf_extra_fields.fields import Base64ImageField
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from recipes.models import Component, FavourRecipe, Product, Recipe, Tag
+from recipes.models import Component, Product, Recipe, Tag
 from users.models import CustomUser, Follow
 
 
@@ -198,32 +198,6 @@ class RecipeReadSerializer(DynamicFieldsModelSerializer):
         if user and user.is_authenticated:
             return obj.basket_recipes.exists()
         return False
-
-
-class FavouriteSerializer(serializers.ModelSerializer):
-    user = serializers.SlugRelatedField(
-        slug_field='username', read_only=True,
-        required=False
-    )
-    recipe = serializers.SlugRelatedField(
-        slug_field='recipe_id', read_only=True,
-        required=False
-    )
-
-    class Meta:
-        model = FavourRecipe
-        fields = ('user', 'recipe')
-
-    def validate(self, data):
-        user = self.context['request'].user
-        recipe_id = self.context.get('view').kwargs.get('recipe_id')
-
-        if FavourRecipe.objects.filter(
-            user=user.id, recipe=recipe_id
-        ).exists():
-            raise serializers.ValidationError(
-                'Этот рецепт уже в избранном.')
-        return data
 
 
 class SubscribeSerializer(serializers.ModelSerializer):

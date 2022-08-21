@@ -133,9 +133,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='shopping_cart', url_name='basket',
     )
     def shopping_cart(self, request, pk=None):
-        method = request.method
-        user = request.user
-        return self.add_del_method(method, user, Basket, pk)
+        return self.add_del_method(request, Basket, pk)
 
     @action(
         detail=True, methods=('post', 'delete'),
@@ -143,9 +141,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='favorite', url_name='favorite',
     )
     def add_del_favorite(self, request, pk=None):
-        method = request.method
-        user = request.user
-        return self.add_del_method(method, user, FavourRecipe, pk)
+        return self.add_del_method(request, FavourRecipe, pk)
 
     @action(
         detail=False, methods=('get',),

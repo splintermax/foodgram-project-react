@@ -96,9 +96,12 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             component_id = components_data["id"]
             if component_id in unique_components_data:
                 raise serializers.ValidationError(
-                    "Ингредиент возможно использовать только один раз."
+                    'Ингредиент возможно использовать только один раз.'
                 )
             unique_components_data.add(component_id)
+            if int(components.get('amount')) < 1:
+                raise serializers.ValidationError(
+                    'Количество ингредиента должно быть больше одного!')
         return data
 
     def add_components(self, recipe, components):

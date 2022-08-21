@@ -102,7 +102,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             unique_components_data.add(component_id)
             if data['cooking_time'] < settings.MIN_TIME:
                 raise serializers.ValidationError(
-                    'Ошибка: Невозможно приготовить блюдо менее, чем за 1 минуту.'
+                    'Ошибка: Приготовление невозможно менее, чем за 1 минуту.'
                 )
             if not data['tags']:
                 raise serializers.ValidationError(
@@ -110,7 +110,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 )
             if len(data['tags']) != len(set(data['tags'])):
                 raise serializers.ValidationError(
-                    'Ошибка: Тег для рецепта возможно указать только один раз.'
+                    'Ошибка: Тег возможно указать только один раз.'
                 )
             if not data['components']:
                 raise serializers.ValidationError(

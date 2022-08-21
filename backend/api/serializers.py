@@ -98,9 +98,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     'Ингредиент возможно использовать только один раз.'
                 )
-            if int(component['amount']) < 0:
+            if int(component['amount']) < 1:
                 raise serializers.ValidationError(
-                    'Убедитесь, что значение количества ингредиента больше 0'
+                    'Убедитесь, что значение количества ингредиента больше 1'
                 )
             unique_components_data.add(component_id)
         return data

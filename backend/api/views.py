@@ -14,7 +14,7 @@ from api.paginations import PageLimitNumberPagination
 from api.permissions import AuthorOrReadOnly
 from api.serializers import (
     CustomUserSerializer,
-    FavourOrBasketRecipeSerializer,
+    FavouriteSerializer,
     ProductSerializer,
     RecipeReadSerializer,
     RecipeWriteSerializer,
@@ -139,7 +139,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe_pk = self.kwargs.get("pk")
         recipe = get_object_or_404(Recipe, pk=recipe_pk)
         if request.method == "POST":
-            serializer = FavourOrBasketRecipeSerializer(recipe)
+            serializer = FavouriteSerializer(recipe)
             FavourRecipe.objects.create(
                 user=self.request.user, recipe=recipe
             )
@@ -166,7 +166,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe_pk = self.kwargs.get("pk")
         recipe = get_object_or_404(Recipe, pk=recipe_pk)
         if request.method == "POST":
-            serializer = FavourOrBasketRecipeSerializer(recipe)
+            serializer = FavouriteSerializer(recipe)
             Basket.objects.create(user=self.request.user, recipe=recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         elif request.method == "DELETE":

@@ -1,3 +1,5 @@
+from asyncore import read
+from email.policy import default
 from drf_extra_fields.fields import Base64ImageField
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
@@ -177,6 +179,25 @@ class RecipeReadSerializer(DynamicFieldsModelSerializer):
             'is_in_shopping_cart',
             'name', 'image', 'text', 'cooking_time'
         )
+
+    def get_user(self):
+        user = None
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            user = request.user
+        return user
+
+    def get_is_favorited(self, obj):
+        user = self.get_user()
+        if user and user.is_authenticated:
+            return obj.favourite.filter(user=user).exists()
+        return False
+
+    def get_is_in_shopping_cart(self, obj):
+        user = self.get_user()
+        if user and user.is_authenticated:
+            return obj.basket_recipes(user=user).exists()
+        return False
 
 
 class SubscribeSerializer(serializers.ModelSerializer):

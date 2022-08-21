@@ -111,10 +111,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeReadSerializer
         return RecipeWriteSerializer
 
-    def add_del_method(method, user, pk, model):
+    def add_del_method(self, user, pk, model):
         user = get_object_or_404(CustomUser, username=user)
         recipe = get_object_or_404(Recipe, pk=pk)
-        if method == 'POST':
+        if self.request.method == 'POST':
             model.objects.get_or_create(user=user, recipe=recipe)
             data = {
                 'id': recipe.id,

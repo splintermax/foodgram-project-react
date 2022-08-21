@@ -104,14 +104,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     'Ошибка: Приготовление невозможно менее, чем за 1 минуту.'
                 )
-            if not data['tags']:
-                raise serializers.ValidationError(
-                    'Ошибка: Создание рецепта без тега невозможно'
-                )
-            if len(data['tags']) != len(set(data['tags'])):
-                raise serializers.ValidationError(
-                    'Ошибка: Тег возможно указать только один раз.'
-                )
             if not data['components']:
                 raise serializers.ValidationError(
                     'Ошибка: Невозможно создание рецепта без ингредиента'
